@@ -38,6 +38,11 @@
             $q_position = "and l.mr_pos_id = {$_GET['mr_pos_id']}";
         }
 
+        $q_venue = "";
+        if($_GET['venue_id'] <> ''){
+            $q_venue = "and l.venue_id = {$_GET['venue_id']}";
+        }
+
         if(!empty($_SESSION['iris-clients']['branch'])){
             $q_branch = "and p.branch_id in  ({$_SESSION['iris-clients']['branch']})";
         }else{
@@ -74,6 +79,7 @@
                     #and (p.branch_id in (select branch_id From manpower_branch where manpower_rid = l.manpower_rid and branch_status = 1) or p.branch_id = 0)
                     and (br.status = 1 or p.branch_id = 0)
                     {$q_position}
+                    {$q_venue}
                     {$q_branch}";
         $r_lineup = fetch_data($q_lineup);
 
@@ -103,6 +109,9 @@
 
             $cat_list = $_SESSION['iris-clients']['mr-categories'];
         }
+
+        /* GET VENUE */
+        $venues = fetch_data("select venue_id, name, venue_date, address from venue where manpower_rid = ? and date_status = ? order by venue_date asc", [$_GET['mr_id'], 1], 'ss', false, "venue_id");
     }
 
     if(isset($_GET['excel'])){
@@ -143,6 +152,22 @@
                 </select>
             </div>
         </div>
+
+        <?php if(!empty($venues)):?>
+            <div class="row g-3 align-items-center">
+                <div class="col-md-1">
+                    <label for="categoryFilter" class="col-form-label fw-bold small">Interview Date:</label>
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    <select id="list-venue" name="venue_id" class="form-select form-select-sm">
+                        <option value="">All</option>
+                        <?php foreach($venues as $vItem):?>
+                            <option value="<?=$vItem['venue_id']?>"><?=date("M d, Y", strtotime($vItem['venue_date']))?> (<?=$vItem['name']?>)</option>
+                        <?php endforeach;?>
+                    </select>
+                </div>
+            </div>
+        <?php endif;?>
 
         <div class="row g-3 align-items-center">
             <div class="col-md-1">
@@ -276,16 +301,17 @@
         //     generate_lineup(mr_id, mr_pos_id);
         // });
 
-        $('#list-mr, #list-category').on('change', function(){
+        $('#list-mr, #list-category, #list-venue').on('change', function(){
 
             if($(this).attr('id') == 'list-mr'){
-                $('#list-category').val('');
+                $('#list-category, #list-venue').val('');
             }
 
             let mr_id = $('#list-mr').val();
             let mr_pos_id = $('#list-category').val();
+            let venue_id = $('#list-venue').val();
 
-            generate_lineup(mr_id, mr_pos_id);
+            generate_lineup(mr_id, mr_pos_id, venue_id);
         });
     });
 

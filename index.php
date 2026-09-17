@@ -233,8 +233,8 @@
             });
         }
 
-        function generate_lineup(mr_id=null, mr_pos_id=null){
-            $.get('data-lineup.php', {mr_id:mr_id, mr_pos_id:mr_pos_id}, function (lineup_data) {
+        function generate_lineup(mr_id=null, mr_pos_id=null, venue_id=null){
+            $.get('data-lineup.php', {mr_id:mr_id, mr_pos_id:mr_pos_id, venue_id:venue_id}, function (lineup_data) {
 
                 $('#cont-lineup').html(lineup_data);
 
